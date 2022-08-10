@@ -19,7 +19,7 @@ class MovieInput {
 }
 
 @InputType()
-class MovieUpdateInput {
+class MovieUpdateInput { 
   @Field(() => String, { nullable: true })
   title?: string;
 
@@ -29,29 +29,39 @@ class MovieUpdateInput {
 
 @Resolver()
 export class MovieResolver {
+  // Create
   @Mutation(() => Movie)
   async createMovie(@Arg("options", () => MovieInput) options: MovieInput) {
     const movie = await Movie.create(options).save();
     return movie;
   }
-
-  @Mutation(() => Boolean)
+  // Read
+  @Query(() => [Movie])
+  movies() {
+    return Movie.find();
+  }
+  // Read One Movie
+  @Query(() => Movie)
+  async getMovie(
+    @Arg("id", () => Int) id: number
+  ) {
+    const movie = await Movie.findOne({ where: { id } });
+    return movie;
+  }
+  // Update
+  @Mutation(() => Movie)
   async updateMovie(
     @Arg("id", () => Int) id: number,
     @Arg("input", () => MovieUpdateInput) input: MovieUpdateInput
   ) {
     await Movie.update({ id }, input);
-    return true;
+    const updatedMovie = this.getMovie(id);
+    return updatedMovie;
   }
-
+  // Delete
   @Mutation(() => Boolean)
   async deleteMovie(@Arg("id", () => Int) id: number) {
     await Movie.delete({ id });
     return true;
-  }
-
-  @Query(() => [Movie])
-  movies() {
-    return Movie.find();
   }
 }
